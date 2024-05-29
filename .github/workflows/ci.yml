@@ -1,4 +1,4 @@
-name: GHAction example
+name: GHAction example  
 
 on:
   workflow_dispatch:
@@ -8,67 +8,42 @@ on:
 
 jobs:
   ci_step:
-    name: Build, tag and push Docker image to GHCR.io
+    name: Build, tag and push Docker image to DockerHub
     runs-on: ubuntu-latest
       
     steps:
-      - name: Check out the source_repo
+      - 
+        name: Check out the source_repo
         uses: actions/checkout@v4
       
-      - name: Docker metadata definitions
+      -
+        name: Docker metadata definitions
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/example
+          images: ${{ vars.DOCKERHUB_USERNAME }}/example
           flavor: latest=false
           tags: |
             type=sha,priority=100,prefix=sha-,format=short
-            type=semver,priority=200,pattern={{version}}
+            type=semver,priority=200,pattern={{version}}   
 
-      - name: QEMU set-up
+      - 
+        name: QEMU set-up
         uses: docker/setup-qemu-action@v3
 
-      - name: Buildx set-up
+      - 
+        name: Buildx set-up
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GHCR
+      - 
+        name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build Docker image
-        id: build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: false  # Nie przesyłamy obrazu, dopóki nie przejdzie skanowania
-          cache-from: |
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/example:cache 
-          cache-to: |
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/example:cache  
-          tags: ${{ steps.meta.outputs.tags }}
-
-      - name: Scan Docker image for vulnerabilities
-        id: scan
-        uses: docker/scout-action@v1
-        with:
-          image: ghcr.io/${{ github.repository_owner }}/example:${{ steps.meta.outputs.version }}
-          command: 'cves'
-
-      - name: Check scan results
-        run: |
-          critical=$(jq '.data[0].summary.critical' <<< "${{ steps.scan.outputs.results }}")
-          high=$(jq '.data[0].summary.high' <<< "${{ steps.scan.outputs.results }}")
-          if [ "$critical" -gt 0 ] || [ "$high" -gt 0 ]; then
-            echo "Image contains critical or high vulnerabilities"
-            exit 1
-
-      - name: Push Docker image to GHCR.io
-        if: success()  # Ten krok uruchomi się tylko, jeśli poprzednie kroki zakończyły się sukcesem
+      - 
+        name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -76,7 +51,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           cache-from: |
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/example:cache 
+            type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/example:cache 
           cache-to: |
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/example:cache  
+            type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/example:cache  
           tags: ${{ steps.meta.outputs.tags }}
+      
