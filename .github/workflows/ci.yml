@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
   push:
     branches: 
-      - main
+    - 'main'
     tags:
     - 'v*'
+  pull_request:
+    branches:
+    - 'main'
+  
 
 env:
   REGISTRY: ghcr.io
@@ -76,6 +80,13 @@ jobs:
         name: Checkout repository
         uses: actions/checkout@main
 
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: name/app
+
       - 
         name: Login to GitHub Container Registry
         uses: docker/login-action@v1
@@ -84,8 +95,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - 
-        name: Build and push Docker image
-        run: |
-              docker build . --tag ghcr.io/PusyHunter/Zadanie_2:latest
-              docker push ghcr.io/PusyHunter/Zadanie_2:latest
+        name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
         
