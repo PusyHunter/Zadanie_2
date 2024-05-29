@@ -65,6 +65,32 @@ jobs:
           cache-to: |
             type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/example:cache  
           tags: ${{ steps.meta.outputs.tags }}
+
+      - 
+        name: Docker Scout
+        id: docker-scout-cves
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ steps.meta.outputs.tags }}
+          sarif-file: sarif.output.json
+          only-severities: critical,high
+          summary: true          
+          to-latest: true
+          ignore-base: true
+          ignore-unchanged: true
+          only-fixed: true
+      
+      - 
+        name: Check for high and critical CVEs
+        id: check-cves
+        run: |
+            if grep -q '"level": "high"\|"level": "critical"' sarif.output.json; then
+              echo "Found high or critical CVEs."
+              exit 1
+            else
+              echo "No high or critical CVEs found."
+            fi
   
   build-and-push-image:
     runs-on: ubuntu-latest
