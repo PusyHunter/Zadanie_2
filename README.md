@@ -52,6 +52,10 @@ tags: Użycie tagów wygenerowanych w poprzednim kroku (${{ steps.meta.outputs.t
 
 #Wyniki
 ![image](https://github.com/PusyHunter/Zadanie_2/assets/98088572/329be720-5d5f-4654-b0a7-086a86da171e)
+![image](https://github.com/PusyHunter/Zadanie_2/assets/98088572/c028c1c4-3e21-47d9-9e82-5ff029a2178f)
+![image](https://github.com/PusyHunter/Zadanie_2/assets/98088572/7008da13-c0be-4cdc-858c-57e6604aa8ac)
+
+
 
 
 
