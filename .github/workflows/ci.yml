@@ -1,4 +1,4 @@
-name: GHAction example  
+name: GHAction_Zadanie_2 
 
 on:
   workflow_dispatch:
@@ -65,7 +65,9 @@ jobs:
           cache-to: |
             type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/example:cache  
           tags: ${{ steps.meta.outputs.tags }}
-
+      
+      #czesc modyfikowana
+      #sprawdzamy na obecnosc critical, high vulnerebilities
       - 
         name: Docker Scout
         id: docker-scout-cves
@@ -81,6 +83,7 @@ jobs:
           ignore-unchanged: true
           only-fixed: true
       
+      #jesli takie sa przerywamy proces
       - 
         name: Check for high and critical CVEs
         id: check-cves
@@ -92,6 +95,7 @@ jobs:
               echo "No high or critical CVEs found."
             fi
   
+  #wrzucanie na githuba
   build-and-push-image:
     runs-on: ubuntu-latest
         
